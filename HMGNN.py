@@ -1,3 +1,5 @@
+# _*_ coding:utf-8 _*_
+
 from __future__ import division
 from __future__ import print_function
 

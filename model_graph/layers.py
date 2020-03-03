@@ -1,3 +1,5 @@
+# _*_ coding:utf-8 _*_
+
 import tensorflow as tf
 import time
 import numpy as np
@@ -10,8 +12,6 @@ from inits import *
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
-import l_softmax as LSOFTMAX
-lsoftmax = LSOFTMAX.lsoftmax
 
 # global unique layer ID dictionary for layer name assignment
 _LAYER_UIDS = {}

@@ -1,7 +1,9 @@
+# _*_ coding:utf-8 _*_
+
+import tensorflow as tf
 import os,sys
 ABSPATH = os.path.abspath(os.path.realpath(os.path.dirname(__file__)))
 sys.path.append(ABSPATH)
-
 from layers import *
 from metrics import *
 
