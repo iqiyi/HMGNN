@@ -704,8 +704,17 @@ if __name__ == "__main__":
 
     data_loader = DataLoader()
     vanilla_adj, vanilla_feature, adj_list,feature, labels, uid_id, y_train, y_val, test_label, train_mask, val_mask, test_mask = data_loader.load_data()
-    print(vanilla_adj)
-    print(type(vanilla_adj))
 
     # vanilla_adj: [invite_edges, dfp_edges, ...]
     #    invite_edges: [row_list, col_list, weight_list, node_num], node_num = len(row_list) = len(col_list)
+    # vanilla_feature: [feature_list, ......], len(vanilla_feature) = node_num
+    # adj_list: useless
+    # feature: useless
+    # labels: np.array, (node_num, 1)
+    # uid_id: useless quick_start
+    # y_train: np.array, (node_num, classify_kinds) classify_kinds:2
+    # y_val: np.array, (node_num, classify_kinds) classify_kinds:2
+    # test_label: np.array, (sample_num, 1)
+    # train_mask: np.array, (node_num, 1) [True True False .......]
+    # val_mask: np.array, (node_num, 1) [True True False .......]
+    # test_mask: np.array, (node_num, 1) [True True False .......]
