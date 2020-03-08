@@ -6,9 +6,9 @@ from __future__ import print_function
 import os,time
 import argparse
 import tensorflow as tf
-import matplotlib as plt
 import pickle
 
+from sklearn.neighbors import NearestNeighbors
 from utils import *
 import hparams
 import pandas as pd
@@ -163,7 +163,7 @@ def evaluate_test(preds, truth, threshold=None):
     recall = TP / (TP + FN)
     F1 = (2*precision*recall) /(precision + recall)
     P, N, unlabel_num = max(P, 1), max(N, 1), max(unlabel_num, 1)
-    print(f"precison={precision:.4f} recall={recall:.4f} F1={F1:.4f} TPR={TPR:.4f} TNR={TNR:.4f}")
+    print(f"precison={precision:.4f} recall={recall:.4f} F1={F1:.4f}")
     print(f"unlabel_black = {unlabel_pos}/{unlabel_num} = {unlabel_pos/unlabel_num:.4f} pos_num={P} neg_num={N}")
     print(f"extra_pos/vanilla_pos={extra_pos}/{vanilla_pos}={extra_pos/vanilla_pos:.3f}")
     
@@ -308,7 +308,6 @@ if __name__ == "__main__":
     # 对于每个超点找 K近邻
     features_np = np.array(features)
     K = 10
-    from sklearn.neighbors import NearestNeighbors
     for i in range(num_supports):
         st = normal_node_num + pre_graph_sum[i]
         ed = st + super_nodes[i][0]
@@ -386,6 +385,7 @@ if __name__ == "__main__":
     }
 
     # build model
+    hidden_dim = [64, 32, 16, 8, 4]
     model = model_func(placeholders, 
                        input_dim=FLAGS.feature_dim,
                        hidden_dim=hidden_dim,
