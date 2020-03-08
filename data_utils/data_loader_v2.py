@@ -670,9 +670,9 @@ if __name__ == "__main__":
     flags.DEFINE_string('invite_edge_table', invite_edge_table, 'invite edge table name in MySql')
     flags.DEFINE_string('device_edge_table', device_edge_table, 'device edge table name in MySql')
 
-    flags.DEFINE_string('begin_date', '2019-09-15', "begin date")
+    flags.DEFINE_string('begin_date', '2019-10-16', "begin date")
     flags.DEFINE_string('end_date', '2019-10-17', "end date")
-    flags.DEFINE_string('predict_date', '2019-10-11/2019-10-17', 'predict date.')
+    flags.DEFINE_string('predict_date', '2019-10-17', 'predict date.')
 
     flags.DEFINE_integer("filter_graph_size", 5, 'the minimum size of invitation graph')
     flags.DEFINE_boolean('filter_label', False, "whether or not filter labels")
@@ -703,4 +703,9 @@ if __name__ == "__main__":
     flags.DEFINE_float('val_ratio', 0.2, 'the ration of validation data.')
 
     data_loader = DataLoader()
-    _ = data_loader.load_data()
+    vanilla_adj, vanilla_feature, adj_list,feature, labels, uid_id, y_train, y_val, test_label, train_mask, val_mask, test_mask = data_loader.load_data()
+    print(vanilla_adj)
+    print(type(vanilla_adj))
+
+    # vanilla_adj: [invite_edges, dfp_edges, ...]
+    #    invite_edges: [row_list, col_list, weight_list, node_num], node_num = len(row_list) = len(col_list)
