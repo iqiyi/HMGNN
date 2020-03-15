@@ -14,6 +14,7 @@ import hparams
 import pandas as pd
 from scipy import sparse
 import scipy.sparse as sp
+from data_utils.data_loader import load_data
 
 import os
 import warnings
@@ -185,6 +186,8 @@ def prepare_super_nodes(vani_adj):
         ### 给定一张大图的adj返回这个大图包含多少个小图，每个小图的大小，每个小图包含的id
         def bfs_graph(Graph):
             node_num = Graph[3]
+            print("!!!!!!!!!!!!!!")
+            print(node_num)
             visited = [False for i in range(node_num)]
             neighbor = [[] for i in range(node_num)]
 
@@ -240,9 +243,10 @@ if __name__ == "__main__":
     print(f"---------------------------------- Begin loading data ----------------------------------")
     begin_load_data_time = time.time()
     ####### Please specify your own data loader
-    loader = DataLoader()
-    vani_adjs, vani_ftr, adjs, features, labels, uid_id_map, y_train, y_val, y_test, train_mask, val_mask, test_mask = loader.load_data()
-    
+    # vani_adjs, vani_ftr, adjs, features, labels, uid_id_map, y_train, y_val, y_test, train_mask, val_mask, test_mask = load_data()
+    vani_adjs, vani_ftr, labels, y_train, y_test, y_val, train_mask, test_mask, val_mask = load_data("data_utils")
+    vani_ftr = list(vani_ftr)
+
     # graph_info = [normal_node_num, super_node_num, super_links vani_adjs, preprocessed_adjs, preprocessed_feature]
     super_nodes = prepare_super_nodes(vani_adjs) # [graph_num, graph_size, graph_ids]
     normal_node_num = len(vani_ftr)
@@ -252,8 +256,7 @@ if __name__ == "__main__":
     
     edge_name = ['e1', 'e2', 'e3', 'e4']
     num_supports = len(vani_adjs)
-    vanillla_normal_feature = features.copy()
-    
+
     print(f"\n normal_nodes_num={normal_node_num}", end=" ")
     for i in range(num_supports):
         print(f"{edge_name[i]}_num={normal_node_num+super_nodes[i][0]}({super_nodes[i][0]})", end=" ")
@@ -307,7 +310,7 @@ if __name__ == "__main__":
         
     # 对于每个超点找 K近邻
     features_np = np.array(features)
-    K = 10
+    K = 5
     for i in range(num_supports):
         st = normal_node_num + pre_graph_sum[i]
         ed = st + super_nodes[i][0]
@@ -356,7 +359,7 @@ if __name__ == "__main__":
     test_mask.extend(super_node_mask)
     test_mask = np.array(test_mask, dtype=np.bool)
 
-    super_node_one_hot = np.zeros((super_node_num, 2), dtype = np.int32)
+    super_node_one_hot = np.zeros((super_node_num, 7), dtype = np.int32)
     y_train = np.vstack((y_train, super_node_one_hot))
     y_val = np.vstack((y_val, super_node_one_hot))
 
@@ -365,7 +368,7 @@ if __name__ == "__main__":
     print(f"total_num = normal_node_num + super_node_num = {normal_node_num} + {super_node_num} = {total_num}")
     print(f"---------------------------------- Finish loading data: time elapsed: {end_load_data_time:.3f}s -----------\n")
 
-
+    '''
     print(f"\n---------------------------------- Begin initializing model ----- {FLAGS.model_name} --------------")
     begin_initialize = time.time()
     from model_graph.models import HMMG
@@ -417,13 +420,7 @@ if __name__ == "__main__":
     print(f"----------------------- Total Training Time = {train_end:.3f}s----------------------------")
 
     all_preds, all_probs = get_all_preds()
-    
-    # get uid2id and id2uid dictionary
-    id_list, uid_list = uid_id_map["id"].values.tolist(), uid_id_map["uid"].values.tolist()
-    id_uid_dict = dict()
-    for index in range(len(id_list)):
-        id_uid_dict[id_list[index]] = uid_list[index]
-        
+            
     print(f"begin_date={FLAGS.begin_date} end_date={FLAGS.end_date} predict_date={FLAGS.predict_date} total={total_num}")
     print(f"train: total={train_num} pos={train_pos} neg={train_neg} unlabel={train_num-train_pos-train_neg}")
     print(f"val  : total={val_num} pos={val_pos}  neg={val_neg}")
@@ -440,10 +437,4 @@ if __name__ == "__main__":
     print("\ntest on test data ...")
     test_preds, test_probs, test_labels = all_preds[test_mask], all_probs[test_mask], labels[test_mask]
     evaluate_preds(test_preds, test_probs, test_labels)
-        
-#     test_uids = [id_uid_dict[id_list[index]] for index in range(labels.shape[0]) if test_mask[index] == 1]
-#     test_preds, test_probs = all_preds[test_mask], all_probs[test_mask]
-#     for i in range(test_preds.shape[0]):
-#         if test_preds[i] == 0:
-#             test_probs[i] = 1 - test_probs[i]
-#     write_test_preds(test_uids, test_preds, test_probs, 0.95)
+    '''
