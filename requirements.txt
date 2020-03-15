@@ -6,4 +6,4 @@ scikit-learn==0.21.3
 tqdm==4.35.0
 xgboost==0.90
 lightgbm==2.3.0
-tensorflow==1.14.0
+tensorflow==1.12.0
