@@ -706,7 +706,7 @@ if __name__ == "__main__":
     vanilla_adj, vanilla_feature, adj_list,feature, labels, uid_id, y_train, y_val, test_label, train_mask, val_mask, test_mask = data_loader.load_data()
 
     # vanilla_adj: [invite_edges, dfp_edges, ...]
-    #    invite_edges: [row_list, col_list, weight_list, node_num], node_num = len(row_list) = len(col_list)
+    #    invite_edges: [row_list, col_list, weight_list, node_num], node_num: 节点数, len(row_list) = len(col_list):边数
     # vanilla_feature: [feature_list, ......], len(vanilla_feature) = node_num
     # adj_list: useless
     # feature: useless
