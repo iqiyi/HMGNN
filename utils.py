@@ -76,11 +76,12 @@ def preprocess_adj_asymmetric(adj):
     adj_normalized = normalize_adj_asymmetric(adj + sp.eye(adj.shape[0]))
     return sparse_to_tuple(adj_normalized)
 
-def construct_feed_dict(features, support, labels, labels_mask, loss_weight, placeholders):
+
+def construct_feed_dict(features, support, labels, labels_mask, placeholders):
     """Construct feed dictionary."""
     feed_dict = dict()
     feed_dict.update({placeholders['labels']: labels})
-    feed_dict.update({placeholders['loss_weight']: loss_weight})
+    # feed_dict.update({placeholders['loss_weight']: loss_weight})
     feed_dict.update({placeholders['labels_mask']: labels_mask})
     feed_dict.update({placeholders['features']: features})
     # feed_dict.update({placeholders['support'][i]: support[i] for i in range(len(support))})

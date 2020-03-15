@@ -36,7 +36,8 @@ def evaluate(sess, features, support, labels, mask, placeholders):
     outs_val = sess.run([model.loss, model.accuracy, model.evaluation], feed_dict=feed_dict_val)
     return outs_val[0], outs_val[1], outs_val[2][:-1], (time.time() - t_test)
 
-def train():
+
+def train(placeholders):
     print(f"\nstart training process ...........")
     train_begin_time = time.time()
     with tf.Session() as sess:
@@ -88,7 +89,7 @@ def train():
                     save_name = FLAGS.model_name + "-Version" + str(FLAGS.model_version)
                 else:
                     save_name = FLAGS.model_name # "GCN"
-                checkpoint_path = os.path.join(FLAGS.model_dir, FLAGS.model_date, save_name)
+                checkpoint_path = os.path.join(FLAGS.model_dir, save_name)
                 model.save(checkpoint_path, sess, epoch, saver)
             print("")
 #             if epoch > FLAGS.early_stopping and val_loss_list[-1] > np.mean(val_loss_list[-(FLAGS.early_stopping//2+1):-1]) + 0.05:
@@ -368,7 +369,6 @@ if __name__ == "__main__":
     print(f"total_num = normal_node_num + super_node_num = {normal_node_num} + {super_node_num} = {total_num}")
     print(f"---------------------------------- Finish loading data: time elapsed: {end_load_data_time:.3f}s -----------\n")
 
-    '''
     print(f"\n---------------------------------- Begin initializing model ----- {FLAGS.model_name} --------------")
     begin_initialize = time.time()
     from model_graph.models import HMMG
@@ -404,21 +404,22 @@ if __name__ == "__main__":
     end_initializing = time.time() - begin_initialize
     print(f"---------------------------------- Finish initialzing model, time elapsed: {end_initializing:.3f}s -------------\n")
 
-    total_num, val_num, test_num = labels.shape[0], sum(val_mask), sum(test_mask)
-    val_pos, val_neg = sum(labels[val_mask] == 1), sum(labels[val_mask] == 0)
-    train_num, train_pos, train_neg = total_num-sum(train_mask)-val_num, sum(labels[train_mask] == 1), sum(labels[train_mask] == 0)
-    test_pos, test_neg, test_unl = sum(labels[test_mask] == 1), sum(labels[test_mask] == 0), sum(labels[test_mask] == -1)
-
-    print(f"begin_date={FLAGS.begin_date} end_date={FLAGS.end_date} predict_date={FLAGS.predict_date} total={total_num}")
-    print(f"train: total={train_num} pos={train_pos} neg={train_neg} unlabel={train_num-train_pos-train_neg}")
-    print(f"val  : total={val_num} pos={val_pos}  neg={val_neg}")
-    print(f"test : total={test_num} pos={test_pos} neg={test_neg} unlabel={test_unl}")
+    # total_num, val_num, test_num = labels.shape[0], sum(val_mask), sum(test_mask)
+    # val_pos, val_neg = sum(labels[val_mask] == 1), sum(labels[val_mask] == 0)
+    # train_num, train_pos, train_neg = total_num-sum(train_mask)-val_num, sum(labels[train_mask] == 1), sum(labels[train_mask] == 0)
+    # test_pos, test_neg, test_unl = sum(labels[test_mask] == 1), sum(labels[test_mask] == 0), sum(labels[test_mask] == -1)
+    #
+    # print(f"begin_date={FLAGS.begin_date} end_date={FLAGS.end_date} predict_date={FLAGS.predict_date} total={total_num}")
+    # print(f"train: total={train_num} pos={train_pos} neg={train_neg} unlabel={train_num-train_pos-train_neg}")
+    # print(f"val  : total={val_num} pos={val_pos}  neg={val_neg}")
+    # print(f"test : total={test_num} pos={test_pos} neg={test_neg} unlabel={test_unl}")
 
     # train model
-    train()
+    train(placeholders)
     train_end = time.time() - train_begin
     print(f"----------------------- Total Training Time = {train_end:.3f}s----------------------------")
 
+    '''
     all_preds, all_probs = get_all_preds()
             
     print(f"begin_date={FLAGS.begin_date} end_date={FLAGS.end_date} predict_date={FLAGS.predict_date} total={total_num}")

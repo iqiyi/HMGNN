@@ -13,8 +13,8 @@ FLAGS = flags.FLAGS
 def prelu(_x, scope=None):
     """parametric ReLU activation"""
     #with tf.variable_scope(name_or_scope=scope, default_name="prelu"):
-    with tf.compat.v1.variable_scope(name_or_scope=scope, default_name="prelu"):
-        _alpha = tf.compat.v1.get_variable("prelu", shape=_x.get_shape()[-1], dtype=_x.dtype, initializer=tf.constant_initializer(0.1))
+    with tf.variable_scope(name_or_scope=scope, default_name="prelu"):
+        _alpha = tf.get_variable("prelu", shape=_x.get_shape()[-1], dtype=_x.dtype, initializer=tf.constant_initializer(0.1))
         #_alpha = tf.get_variable("prelu", shape=_x.get_shape()[-1],
         #                         dtype=_x.dtype, initializer=tf.constant_initializer(0.1))
         return tf.maximum(0.0, _x) + _alpha * tf.minimum(0.0, _x)
@@ -57,8 +57,8 @@ class Model(object):
 
     def build(self):
         """ Wrapper for _build() """
-        #with tf.variable_scope(self.name):
-        with tf.compat.v1.variable_scope(self.name):
+        with tf.variable_scope(self.name):
+        # with tf.compat.v1.variable_scope(self.name):
             self._build()
 
         # Build sequential layer model
@@ -79,9 +79,9 @@ class Model(object):
         # -------------------------------
 
         # Store model variables for easy access
-        #variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self.name)
+        variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self.name)
         #variables = tf.get_collection(tf.compat.v1.GraphKeys.GLOBAL_VARIABLES, scope=self.name)
-        variables = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.GLOBAL_VARIABLES, scope=self.name)
+        # variables = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.GLOBAL_VARIABLES, scope=self.name)
         self.vars = {var.name: var for var in variables}
 
         # Build metrics
@@ -154,7 +154,7 @@ class HMMG(Model):
         self.labels = placeholders["labels"]
         self.labels_mask = placeholders["labels_mask"]
         self.dropout_ratio = placeholders["dropout"]
-        self.loss_weight = placeholders["loss_weight"]
+        # self.loss_weight = placeholders["loss_weight"]
         
         self.input_dim = input_dim
         self.output_dim = output_dim
@@ -174,8 +174,8 @@ class HMMG(Model):
         self.residual = residual
         self.use_attention = attention
 
-        # self.optimizer = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)
-        self.optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)
+        # self.optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)
 
         self.build()
 
@@ -184,9 +184,9 @@ class HMMG(Model):
             self.loss += FLAGS.weight_decay * tf.nn.l2_loss(var)
 
         # Cross entropy error
-        # self.loss += masked_softmax_cross_entropy(self.outputs, self.labels, self.labels_mask)
-        self.loss += weighted_masked_softmax_cross_entropy(self.outputs, self.labels, self.labels_mask, self.loss_weight)
-        tf.compat.v1.summary.scalar("loss", self.loss)
+        self.loss += masked_softmax_cross_entropy(self.outputs, self.labels, self.labels_mask)
+        # self.loss += weighted_masked_softmax_cross_entropy(self.outputs, self.labels, self.labels_mask, self.loss_weight)
+        tf.summary.scalar("loss", self.loss)
         
     def _accuracy(self):
         self.accuracy = masked_accuracy(self.outputs, self.labels, self.labels_mask)
@@ -195,7 +195,7 @@ class HMMG(Model):
         self.evaluation = precision_recall_f1_tpr_tnr_preds(self.outputs,self.labels, self.labels_mask)
         eval_names = ['precision', 'recall', 'F1', 'TPR', 'TNR']
         for index in range(len(eval_names)):
-            tf.compat.v1.summary.scalar(eval_names[index], self.evaluation[index])
+            tf.summary.scalar(eval_names[index], self.evaluation[index])
 
     def _build(self):
         # the input and output dimension of middle layers, including first and last layer
@@ -207,7 +207,7 @@ class HMMG(Model):
 
         # create attention variables
         if self.use_attention:
-            with tf.compat.v1.variable_scope("attention"):
+            with tf.variable_scope("attention"):
                 # print(f"tf.get_variable_scope().original_name_scope = {tf.compat.v1.get_variable_scope().original_name_scope}")
                 if FLAGS.adj_power > 10:
                     shape = [FLAGS.adj_power, 1]

@@ -41,8 +41,8 @@ def sparse_dropout(x, keep_prob, noise_shape):
 def dot(x, y, sparse=False):
     """Wrapper for tf.matmul (sparse vs dense)."""
     if sparse:
-        #res = tf.sparse_tensor_dense_matmul(x, y)
-        res = tf.sparse.sparse_dense_matmul(x, y)
+        res = tf.sparse_tensor_dense_matmul(x, y)
+        # res = tf.sparse.sparse_dense_matmul(x, y)
     else:
         res = tf.matmul(x, y)
     return res
@@ -136,18 +136,18 @@ class Layer(object):
         with tf.name_scope(self.name):
             if self.logging and not self.sparse_inputs:
                 #tf.summary.histogram(self.name + '/inputs', inputs)
-                tf.compat.v1.summary.histogram(self.name + '/inputs', inputs)
+                tf.summary.histogram(self.name + '/inputs', inputs)
             if vanilla_feature is None:
                 outputs = self._call(inputs)
             else:
                 outputs = self._call(inputs, vanilla_feature)
             if self.logging:
-                tf.compat.v1.summary.histogram(self.name + '/outputs', outputs)
+                tf.summary.histogram(self.name + '/outputs', outputs)
             return outputs
 
     def _log_vars(self):
         for var in self.vars:
-            tf.compat.v1.summary.histogram(self.name + '/vars/' + var, self.vars[var])
+            tf.summary.histogram(self.name + '/vars/' + var, self.vars[var])
             
 class HMMGConvolution(Layer):
     """Heterogeneous Multiple Mini-Graphs Convolution Layer."""
@@ -181,10 +181,10 @@ class HMMGConvolution(Layer):
         self.num_features_nonzero = num_features_nonzero
         
         if self.use_attention:
-            with tf.compat.v1.variable_scope('attention', reuse=True):
+            with tf.variable_scope('attention', reuse=True):
                 self.att = tf.nn.softmax(tf.get_variable(name="att"), dim=0)
 
-        with tf.compat.v1.variable_scope(self.name + '_vars'):
+        with tf.variable_scope(self.name + '_vars'):
             if FLAGS.adj_power > 1:
                 for i in range(len(self.support)):
                     for j in range(FLAGS.adj_power):
@@ -212,8 +212,8 @@ class HMMGConvolution(Layer):
         if self.sparse_inputs:
             x = sparse_dropout(x, 1-self.dropout, self.num_features_nonzero)
         else:
-            #x = tf.nn.dropout(x, 1-self.dropout)
-            x = tf.nn.dropout(x, rate=self.dropout)
+            x = tf.nn.dropout(x, 1-self.dropout)
+            # x = tf.nn.dropout(x, rate=self.dropout)
         
         # convolve
         supports = list()

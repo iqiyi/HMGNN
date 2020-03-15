@@ -11,21 +11,23 @@ flags.DEFINE_float('beta', 0.5, "the weight between subgraph embedding and own e
 flags.DEFINE_string('output_dir', './output/', 'predict save path.')
 flags.DEFINE_string('model_dir', './model/', 'model save path.')
 
+flags.DEFINE_boolean('reweight_adj', False, "whether or not reweight adjacency matrix")
+
 ## model version
 flags.DEFINE_integer('model_version', 0, 'model version.') 
 flags.DEFINE_string('model_name', 'GCN', 'model name.') 
 flags.DEFINE_string('model_date', '0000-00-00', 'model date.') 
 
 ## data params
-flags.DEFINE_integer('feature_dim', 1000, 'the original feature dimensions')
-flags.DEFINE_integer('label_kinds', 2, 'the label count.')
+flags.DEFINE_integer('feature_dim', 1433, 'the original feature dimensions')
+flags.DEFINE_integer('label_kinds', 7, 'the label count.')
 flags.DEFINE_float('train_ratio', 0.6, 'the ratio of training data.')
 flags.DEFINE_float('test_ratio', 0.2, 'the ratio of testing data.')
 flags.DEFINE_float('val_ratio', 0.2, 'the ration of validation data.')
 
 ## model params
 flags.DEFINE_float('learning_rate', 0.005, 'Initial learning rate.')
-flags.DEFINE_integer('epochs', 300, 'Number of epochs to train.')
+flags.DEFINE_integer('epochs', 10, 'Number of epochs to train.')
 flags.DEFINE_integer('add_layer', 1, 'Number of additional GCN layers.')
 flags.DEFINE_integer('hidden1', 32, 'Number of units in hidden layer 1.')
 flags.DEFINE_integer('hidden2', 16, 'Number of units in hidden layer 2.')
