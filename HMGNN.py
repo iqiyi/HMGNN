@@ -122,8 +122,6 @@ def main():
             # Print results
             print(
                 f"Epoch:{epoch + 1:3d},   loss    acc    time, time elapsed={epoch_end:.3f}s --------")
-            train_outs = ' '.join([("%.5f" % _) for _ in train_eval])
-            val_outs = ' '.join([("%.5f" % _) for _ in val_eval])
             print(f"Train:     {train_loss:.5f} {train_acc:.5f} {train_time:.3f}s")
             print(f"Valid:     {val_loss:.5f} {val_acc:.5f} {val_time:.3f}s")
 
