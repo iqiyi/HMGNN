@@ -168,18 +168,7 @@ def evaluate_test(preds, truth, threshold=None):
     print(f"precison={precision:.4f} recall={recall:.4f} F1={F1:.4f}")
     print(f"unlabel_black = {unlabel_pos}/{unlabel_num} = {unlabel_pos/unlabel_num:.4f} pos_num={P} neg_num={N}")
     print(f"extra_pos/vanilla_pos={extra_pos}/{vanilla_pos}={extra_pos/vanilla_pos:.3f}")
-    
-def write_test_preds(test_uids, test_preds, test_probs, threshold=0.95):
-    uid_list, probs_list = [], []
-    for i in range(len(test_uids)):
-        if test_probs[i] >= threshold:
-            uid_list.append(test_uids[i])
-            probs_list.append(test_probs[i])
-    results = pd.DataFrame({"uid": uid_list, "probs": probs_list})
-    if not os.path.exists(FLAGS.output_dir):
-        os.makedirs(FLAGS.output_dir)
-    result_path = FLAGS.output_dir + "black.csv"
-    results.to_csv(result_path, index=False)
+
     
 def prepare_super_nodes(vani_adj):
     super_nodes = []
@@ -254,7 +243,7 @@ if __name__ == "__main__":
     super_node_num = sum([per[0] for per in super_nodes])
     total_num = normal_node_num + super_node_num
     vani_ftr_np = np.array(vani_ftr)
-    
+
     edge_name = ['e1', 'e2', 'e3', 'e4']
     num_supports = len(vani_adjs)
 
@@ -262,45 +251,45 @@ if __name__ == "__main__":
     for i in range(num_supports):
         print(f"{edge_name[i]}_num={normal_node_num+super_nodes[i][0]}({super_nodes[i][0]})", end=" ")
     print(f"total_num={total_num} time={time.time()-begin_load_data_time:.3f}s")
-    
+
     # 每张图的节点数量一致，包括三种类型的节点：原始节点、超点、空点
     null_row_ftr = [0 for i in range(FLAGS.feature_dim)] # 空点特征
-    
+
     # 先计算每张图前后图的节点数量
     pre_graph_sum, suf_graph_sum = [0 for i in range(num_supports)], [0 for i in range(num_supports)]
     for i in range(1, num_supports):
         pre_graph_sum[i] = pre_graph_sum[i-1] + super_nodes[i-1][0]
     for i in range(num_supports - 2, -1, -1):
         suf_graph_sum[i] = suf_graph_sum[i+1] + super_nodes[i+1][0]
-        
+
     # 计算每张关系图的4个subsupport的坐标范围
     # [[top_i, bottom_i, left_i, right_i]] 1 <= i <= 4  [都是闭区间]
     subsupport_range = []
     for i in range(num_supports):
         cur_support = []
         # 子节点 和 子节点之间的图
-        top, bottom, left, right = 0, normal_node_num - 1, 0, normal_node_num - 1        
+        top, bottom, left, right = 0, normal_node_num - 1, 0, normal_node_num - 1
         cur_support.append([top, bottom, left, right])
-        
+
         # 子节点和超点之间的图
         top, bottom = 0, normal_node_num - 1
         left = normal_node_num + pre_graph_sum[i]
         right = left + super_nodes[i][0] - 1
         cur_support.append([top, bottom, left, right])
-        
+
         # 超点和子节点之间的图
         top = normal_node_num + pre_graph_sum[i]
         bottom = top + super_nodes[i][0] - 1
         left, right = 0, normal_node_num - 1
         cur_support.append([top, bottom, left, right])
-        
+
         # 超点和超点之间的图
         top = normal_node_num + pre_graph_sum[i]
         bottom = top + super_nodes[i][0] - 1
         left, right = top, bottom
         cur_support.append([top, bottom, left, right])
         subsupport_range.append(cur_support)
-    
+
     features = vani_ftr.copy()
     whole_support = [] # 保存最终每张图预处理后的 邻接矩阵
     for i in range(num_supports):
@@ -308,7 +297,7 @@ if __name__ == "__main__":
         adjs = vani_adjs[i].copy()
         for j in range(super_nodes[i][0]): # 第 j 个超点
             features.append(list(np.mean(vani_ftr_np[super_nodes[i][2][j]], axis=0)))
-        
+
     # 对于每个超点找 K近邻
     features_np = np.array(features)
     K = 5
@@ -318,7 +307,7 @@ if __name__ == "__main__":
         super_features = features_np[st:ed]
         clf = NearestNeighbors(n_neighbors=K+1, algorithm='ball_tree').fit(super_features)
         distances, indices = clf.kneighbors(super_features)
-        
+
         adjs = vani_adjs[i].copy()
         for index, per in enumerate(indices):
             u = normal_node_num + pre_graph_sum[i] + index
@@ -328,17 +317,17 @@ if __name__ == "__main__":
                     adjs[0].append(u)
                     adjs[1].append(v)
                     adjs[2].append(1)
-        p_adj = sp.csr_matrix((adjs[2], (adjs[0], adjs[1])), shape=(total_num, total_num))    
+        p_adj = sp.csr_matrix((adjs[2], (adjs[0], adjs[1])), shape=(total_num, total_num))
         p_adj = preprocess_adj(p_adj)
         print(f"{edge_name[i]}, shape = {p_adj[2]} edges_num={len(adjs[0])}")
         whole_support.append(p_adj)
-    
+
     print(f"get all whole supports ok, time={time.time()-begin_load_data_time:.3f}s")
-    
+
     support = whole_support
     features = sp.csr_matrix(features).tolil()
     features = preprocess_features(features)
-    
+
     # 扩展 labels, y_train, y_val, y_test, train_mask, val_mask, test_mask
     # labels = y_test = np.array(normal_node_num, ), y_train = y_val = np.array(normal_node_num, 2)
     # train_mask = val_mask = test_mask = np.array(noraml_node_num, )

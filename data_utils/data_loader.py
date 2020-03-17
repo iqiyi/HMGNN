@@ -46,7 +46,7 @@ def load_data(data_path):
     adj = [row, col, weight, node_num]
     adjs = [adj]
 
-    return adjs, features, labels, y_train, y_test, y_val, train_mask, test_mask, val_mask
+    return adjs, list(features), labels, y_train, y_test, y_val, train_mask, test_mask, val_mask
 
 
 if __name__ == '__main__':
