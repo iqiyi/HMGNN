@@ -86,12 +86,11 @@ def establish(args, vani_adjs, vani_ftr, labels, y_train, y_test, y_val, train_m
 
     # 对于每个超点找 K近邻
     features_np = np.array(features)
-    K = 5
     for i in range(num_supports):
         st = normal_node_num + pre_graph_sum[i]
         ed = st + super_nodes[i][0]
         super_features = features_np[st:ed]
-        clf = NearestNeighbors(n_neighbors=K + 1, algorithm='ball_tree').fit(super_features)
+        clf = NearestNeighbors(n_neighbors=args.nearest_neighbor_K + 1, algorithm='ball_tree').fit(super_features)
         distances, indices = clf.kneighbors(super_features)
 
         adjs = vani_adjs[i].copy()
@@ -135,7 +134,7 @@ def establish(args, vani_adjs, vani_ftr, labels, y_train, y_test, y_val, train_m
     test_mask.extend(super_node_mask)
     test_mask = np.array(test_mask, dtype=np.bool)
 
-    super_node_one_hot = np.zeros((super_node_num, 7), dtype=np.int32)
+    super_node_one_hot = np.zeros((super_node_num, args.label_kinds), dtype=np.int32)
     y_train = np.vstack((y_train, super_node_one_hot))
     y_val = np.vstack((y_val, super_node_one_hot))
 

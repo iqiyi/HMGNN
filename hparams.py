@@ -47,6 +47,7 @@ flags.DEFINE_integer('adj_power', 1, 'the power of adjacency matrix')
 flags.DEFINE_boolean('attention', True, 'whether or not add attention mechanism')
 
 flags.DEFINE_integer('minimum_subgraph_size', 5, 'whether or not add attention mechanism')
+flags.DEFINE_integer('nearest_neighbor_K', 5, 'whether or not add attention mechanism')
 
 
 def create():
