@@ -27,7 +27,7 @@ flags.DEFINE_float('val_ratio', 0.2, 'the ration of validation data.')
 
 ## model params
 flags.DEFINE_float('learning_rate', 0.005, 'Initial learning rate.')
-flags.DEFINE_integer('epochs', 50, 'Number of epochs to train.')
+flags.DEFINE_integer('epochs', 10, 'Number of epochs to train.')
 flags.DEFINE_integer('add_layer', 1, 'Number of additional GCN layers.')
 flags.DEFINE_integer('hidden1', 64, 'Number of units in hidden layer 1.')
 flags.DEFINE_integer('hidden2', 32, 'Number of units in hidden layer 2.')

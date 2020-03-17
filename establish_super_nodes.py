@@ -60,7 +60,11 @@ def prepare_super_nodes(args, vani_adj):
 
 
 def establish(args, vani_adjs, vani_ftr, labels, y_train, y_test, y_val, train_mask, test_mask, val_mask):
-
+    '''
+    there are many mini-graphs in vanilla graph, a super node represents a mini-graph.
+    the meaning features of each mini-graph are used as the features of super nodes.
+    and the super node's nearest neighbors are connected between each super nodes.
+    '''
     num_supports = len(vani_adjs)                         # different kinds of graph
     super_nodes = prepare_super_nodes(args, vani_adjs)    # super_nodes: [[graph_num, graph_size, graph_ids], ...]
     normal_node_num = len(vani_ftr)                       # nodes count without super nodes
@@ -70,25 +74,18 @@ def establish(args, vani_adjs, vani_ftr, labels, y_train, y_test, y_val, train_m
 
     edge_name = ["e%d" % i for i in range(1, num_supports + 1)]
 
-    print(f"\n normal_nodes_num={normal_node_num}", end=" ")
+    # using the meaning feature as the feature of super node
+    features = vani_ftr.copy()
     for i in range(num_supports):
-        print(f"{edge_name[i]}_num={normal_node_num + super_nodes[i][0]}({super_nodes[i][0]})", end=" ")
+        for j in range(super_nodes[i][0]):  # super_nodes[i][0] : mini-graph count in vanilla graph
+            features.append(list(np.mean(vani_ftr_np[super_nodes[i][2][j]], axis=0)))
 
-    # 每张图的节点数量一致，包括三种类型的节点：原始节点、超点、空点
-
-    # 先计算每张图前后图的节点数量
+    # finding K nearest neighbors of each super nodes
+    whole_support = []
     pre_graph_sum = [0 for _ in range(num_supports)]
     for i in range(1, num_supports):
         pre_graph_sum[i] = pre_graph_sum[i - 1] + super_nodes[i - 1][0]
 
-    features = vani_ftr.copy()
-    whole_support = []  # 保存最终每张图预处理后的 邻接矩阵
-    for i in range(num_supports):
-        # vanilla_adjs --> [[row, col, weight, node_num]]
-        for j in range(super_nodes[i][0]):  # 第 j 个超点
-            features.append(list(np.mean(vani_ftr_np[super_nodes[i][2][j]], axis=0)))
-
-    # 对于每个超点找 K近邻
     features_np = np.array(features)
     for i in range(num_supports):
         st = normal_node_num + pre_graph_sum[i]
@@ -108,24 +105,20 @@ def establish(args, vani_adjs, vani_ftr, labels, y_train, y_test, y_val, train_m
                     adjs[2].append(1)
         p_adj = sp.csr_matrix((adjs[2], (adjs[0], adjs[1])), shape=(total_num, total_num))
         p_adj = preprocess_adj(p_adj)
-        print(f"{edge_name[i]}, shape = {p_adj[2]} edges_num={len(adjs[0])}")
+        print(f"edge_name={edge_name[i]}, shape={p_adj[2]}, edges_num={len(adjs[0])}")
         whole_support.append(p_adj)
-
-    # print(f"get all whole supports ok, time={time.time() - begin_load_data_time:.3f}s")
 
     support = whole_support
     features = sp.csr_matrix(features).tolil()
     features = preprocess_features(features)
 
-    # 扩展 labels, y_train, y_val, y_test, train_mask, val_mask, test_mask
-    # labels = y_test = np.array(normal_node_num, ), y_train = y_val = np.array(normal_node_num, 2)
-    # train_mask = val_mask = test_mask = np.array(noraml_node_num, )
-    super_node_labels = [-1 for i in range(super_node_num)]
+    # add super nodes informations to labels, y_train, y_val, y_test, train_mask, val_mask, test_mask
+    super_node_labels = [-1 for _ in range(super_node_num)]  # using -1 as super node's label
     labels = list(labels)
     labels.extend(super_node_labels)
     labels = np.array(labels)
 
-    super_node_mask = [False for i in range(super_node_num)]
+    super_node_mask = [False for _ in range(super_node_num)]
     train_mask = list(train_mask)
     train_mask.extend(super_node_mask)
     train_mask = np.array(train_mask, dtype=np.bool)
