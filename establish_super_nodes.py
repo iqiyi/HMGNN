@@ -139,7 +139,6 @@ def establish(args, vani_adjs, vani_ftr, labels, y_train, y_test, y_val, train_m
     y_train = np.vstack((y_train, super_node_one_hot))
     y_val = np.vstack((y_val, super_node_one_hot))
 
-    # end_load_data_time = time.time() - begin_load_data_time
     print(f"label_kinds={args.label_kinds} num_supports={num_supports} input_dim={features[2][1]}")
     print(f"total_num = normal_node_num + super_node_num = {normal_node_num} + {super_node_num} = {total_num}")
 
