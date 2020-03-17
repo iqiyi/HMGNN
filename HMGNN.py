@@ -3,33 +3,21 @@
 from __future__ import division
 from __future__ import print_function
 
-import os,time
-import argparse
-import tensorflow as tf
-import pickle
-
-from sklearn.neighbors import NearestNeighbors
-from utils import *
+import os
+import warnings
+import time
 import hparams
-import pandas as pd
-from scipy import sparse
-import scipy.sparse as sp
 from data_utils.data_loader import load_data
 from establish_super_nodes import establish
 from model_graph.models import HMMG
+from utils import *
 
-import os
-import warnings
 warnings.filterwarnings("ignore")
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 seed = 123
 np.random.seed(seed)
 tf.set_random_seed(seed)
-try:
-    tf.app.flags.DEFINE_string('f', '', 'kernel')
-except:
-    pass
 
 
 def evaluate(sess, model, features, support, labels, mask, placeholders):
@@ -131,11 +119,11 @@ def main():
             epoch_end = time.time() - epoch_begin
             # Print results
             print(
-                f"Epoch:{epoch + 1:3d},   loss    acc  precision recall    f1      tpr     tnr  time, time elapsed={epoch_end:.3f}s --------")
+                f"Epoch:{epoch + 1:3d},   loss    acc    time, time elapsed={epoch_end:.3f}s --------")
             train_outs = ' '.join([("%.5f" % _) for _ in train_eval])
             val_outs = ' '.join([("%.5f" % _) for _ in val_eval])
-            print(f"Train:     {train_loss:.5f} {train_acc:.5f} {train_outs} {train_time:.3f}s")
-            print(f"Valid:     {val_loss:.5f} {val_acc:.5f} {val_outs} {val_time:.3f}s")
+            print(f"Train:     {train_loss:.5f} {train_acc:.5f} {train_time:.3f}s")
+            print(f"Valid:     {val_loss:.5f} {val_acc:.5f} {val_time:.3f}s")
 
             if FLAGS.attention and epoch > 0 and epoch % 20 == 0:
                 print(f"subgraph attention: {[_[0] for _ in sess.run(model.att)]}")
