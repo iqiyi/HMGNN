@@ -122,10 +122,10 @@ class Model(object):
         saver.restore(sess, ckpt.model_checkpoint_path)
         print("Model restored from file: %s" % ckpt.model_checkpoint_path)
         
-class HMMG(Model):
+class HMGNN(Model):
     def __init__(self, placeholders, input_dim, hidden_dim, output_dim, input_num, normal_node_num, 
                  support_num, reweight_adj, residual, attention, sparse_adj_shape, pure_support=None, **kwargs):
-        super(HMMG, self).__init__(**kwargs)
+        super(HMGNN, self).__init__(**kwargs)
         
         name = kwargs.get('name')
         if not name:
@@ -235,7 +235,7 @@ class HMMG(Model):
             if i > 0: sparse_input = False  # middle layer
             else: sparse_input = True      # first layer
 
-            self.layers.append(HMMGConvolution(input_dim=input_dim,
+            self.layers.append(HMGConvolution(input_dim=input_dim,
                                     output_dim=output_dim,
                                     input_num=self.input_num,
                                     adj_support = self.support,

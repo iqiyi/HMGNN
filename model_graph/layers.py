@@ -149,13 +149,13 @@ class Layer(object):
         for var in self.vars:
             tf.summary.histogram(self.name + '/vars/' + var, self.vars[var])
             
-class HMMGConvolution(Layer):
+class HMGConvolution(Layer):
     """Heterogeneous Multiple Mini-Graphs Convolution Layer."""
     def __init__(self, input_dim, output_dim, input_num, adj_support,
                  num_features_nonzero, dropout_ratio, reweight_adj, beta_constant, dropout=True,
                  sparse_inputs=False, act=tf.nn.relu, bias=False,
                  featureless=False, use_attention=False, residual=False, **kwargs):
-        super(HMMGConvolution, self).__init__(**kwargs)
+        super(HMGConvolution, self).__init__(**kwargs)
         
         if dropout:
             self.dropout = dropout_ratio

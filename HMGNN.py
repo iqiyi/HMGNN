@@ -9,7 +9,7 @@ import time
 import hparams
 from data_utils.data_loader import load_data
 from establish_super_nodes import establish
-from model_graph.models import HMMG
+from model_graph.models import HMGNN
 from utils import *
 
 warnings.filterwarnings("ignore")
@@ -58,7 +58,7 @@ def main():
     print(f"\n---------------------------------- Begin initializing model ----- {FLAGS.model_name} --------------")
     begin_initialize = time.time()
 
-    model_func = HMMG
+    model_func = HMGNN
     sparse_adj_shape = [[support[i][0].shape[0], support[i][0], support[i][-1]] for i in range(num_supports)]
 
     # define placeholders

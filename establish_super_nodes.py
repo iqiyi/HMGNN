@@ -6,13 +6,17 @@ from utils import *
 
 
 def prepare_super_nodes(args, vani_adj):
+    '''
+    using BFS to analyze the mini-graphs in the vanilla graph,
+    return
+        the count of mini-graphs in the vanilla graph,
+        the size of each mini-graph,
+        the id set of each mini-graph.
+    '''
     super_nodes = []
     for index, per_graph in enumerate(vani_adj):
-        ### 给定一张大图的adj返回这个大图包含多少个小图，每个小图的大小，每个小图包含的id
         def bfs_graph(Graph):
             node_num = Graph[3]
-            print("!!!!!!!!!!!!!!")
-            print(node_num)
             visited = [False for i in range(node_num)]
             neighbor = [[] for i in range(node_num)]
 
@@ -56,10 +60,10 @@ def prepare_super_nodes(args, vani_adj):
 
 
 def establish(args, vani_adjs, vani_ftr, labels, y_train, y_test, y_val, train_mask, test_mask, val_mask):
-    # graph_info = [normal_node_num, super_node_num, super_links vani_adjs, preprocessed_adjs, preprocessed_feature]
-    num_supports = len(vani_adjs)  # 不同种类图的个数
-    super_nodes = prepare_super_nodes(args, vani_adjs)  # [[graph_num, graph_size, graph_ids], ...]
-    normal_node_num = len(vani_ftr)
+
+    num_supports = len(vani_adjs)                         # different kinds of graph
+    super_nodes = prepare_super_nodes(args, vani_adjs)    # super_nodes: [[graph_num, graph_size, graph_ids], ...]
+    normal_node_num = len(vani_ftr)                       # nodes count without super nodes
     super_node_num = sum([per[0] for per in super_nodes])
     total_num = normal_node_num + super_node_num
     vani_ftr_np = np.array(vani_ftr)
