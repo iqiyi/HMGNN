@@ -1,8 +1,12 @@
 ## Heterogeneous Multiple Mini-Graph Neural Network for Invitation Anti-cheating
-TensorFlow implementation of Heterogeneous Multiple Mini-Graphs Neural Network for Fraudulent Invitation Detection, KDDCup  
+TensorFlow implementation of Heterogeneous Multiple Mini-Graphs Neural Network for Fraudulent Invitation Detection  
+- usage  
+the task of (semi-supervised) classification of nodes in a graph  
+- introduction  
+We first introduce a kNN-based mechanism to combine diverse yet similar graphs and then the attention mechanism is 
+presented to learn the importance of heterogeneous information. To enhance the representation of sparse and 
+high-dimensional features, a residual style connection that embeds vanilla features into a hidden state is built.
 
-usage: the task of (semi-supervised) classification of nodes in a graph  
-highlights: establish super nodes to enhance the connection of graph  
 
 ## requirements
 tensorflow (>=1.12)  
@@ -10,7 +14,7 @@ pandas
 numpy
 
 ### quick-start
-python HMGNN.py
+`python HMGNN.py`
 
 ### Data
 The data used in quick-start is the Cora dataset.

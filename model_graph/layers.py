@@ -12,22 +12,16 @@ from inits import *
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
-# global unique layer ID dictionary for layer name assignment
-_LAYER_UIDS = {}
+# generate global layer ID dictionary
+layer_id_map = {}
 
 
-def get_layer_uid(layer_name=''):
-    """Helper function, assigns unique layer IDs."""
-    if layer_name not in _LAYER_UIDS:
-        _LAYER_UIDS[layer_name] = 1
-        return 1
-    else:
-        _LAYER_UIDS[layer_name] += 1
-        return _LAYER_UIDS[layer_name]
+def layer_id_assign(layer_name=''):
+    layer_id_map[layer_name] = layer_id_map.setdefault(layer_name, 0) + 1
+    return layer_id_map[layer_name]
 
 
 def sparse_dropout(x, keep_prob, noise_shape):
-    """Dropout for sparse tensors."""
     random_tensor = keep_prob
     random_tensor += tf.random.uniform(noise_shape)
     dropout_mask = tf.cast(tf.floor(random_tensor), dtype=tf.bool)
@@ -35,42 +29,26 @@ def sparse_dropout(x, keep_prob, noise_shape):
     return pre_out * (1./keep_prob)
 
 
-def dot(x, y, sparse=False):
-    """Wrapper for tf.matmul (sparse vs dense)."""
+def mat_mul(x, y, sparse=False):
     if sparse:
-        res = tf.sparse_tensor_dense_matmul(x, y)
+        return tf.sparse_tensor_dense_matmul(x, y)
     else:
-        res = tf.matmul(x, y)
-    return res
+        return tf.matmul(x, y)
 
 
 class Layer(object):
-    """Base layer class. Defines basic API for all layer objects.
-    Implementation inspired by keras (http://keras.io).
-
-    # Properties
-        name: String, defines the variable scope of the layer.
-        logging: Boolean, switches Tensorflow histogram logging on/off
-
-    # Methods
-        _call(inputs): Defines computation graph of layer
-            (i.e. takes input, returns output)
-        __call__(inputs): Wrapper for _call()
-        _log_vars(): Log all variables
-    """
-
     def __init__(self, **kwargs):
-        allowed_kwargs = {'name', 'logging'}
+        necessary_kwargs = {'name', 'logging'}
         for kwarg in kwargs.keys():
-            assert kwarg in allowed_kwargs, 'Invalid keyword argument: ' + kwarg
+            assert kwarg in necessary_kwargs
         name = kwargs.get('name')
         if not name:
-            layer = self.__class__.__name__.lower()
-            name = layer + '_' + str(get_layer_uid(layer))
+            layer_name = self.__class__.__name__.lower()
+            name = layer_name + '_' + str(layer_id_assign(layer_name))
+
         self.name = name
         self.vars = {}
-        logging = kwargs.get('logging', False)
-        self.logging = logging
+        self.logging = kwargs.get('logging', False)
         self.sparse_inputs = False
 
     def _call(self, inputs):
@@ -167,11 +145,11 @@ class HMGConvolution(Layer):
                     w = self.vars['weights_adj_'+str(i)+'_power_'+str(j)]
                     
                     if not self.featureless:
-                        pre_sup = dot(x, w, sparse=self.sparse_inputs)
+                        pre_sup = mat_mul(x, w, sparse=self.sparse_inputs)
                     else:
                         pre_sup = w
 
-                    support = dot(self.support[i][j], pre_sup, sparse=True)
+                    support = mat_mul(self.support[i][j], pre_sup, sparse=True)
                     cur_support.append(tf.multiply(support, 1.0/FLAGS.adj_power))
                 supports.append(tf.add_n(cur_support))
             else:
@@ -181,7 +159,7 @@ class HMGConvolution(Layer):
                     w = self.vars['weight']
 
                 if not self.featureless:
-                    pre_sup = dot(x, w, sparse=self.sparse_inputs)
+                    pre_sup = mat_mul(x, w, sparse=self.sparse_inputs)
                 else:
                     pre_sup = w
 
@@ -229,7 +207,7 @@ class HMGConvolution(Layer):
 
                     support = tf.sparse_tensor_dense_matmul(coefs, pre_sup)
                 else:
-                    support = dot(self.support[i], pre_sup, sparse=True)
+                    support = mat_mul(self.support[i], pre_sup, sparse=True)
                 supports.append(support)
         
         if self.use_attention:
@@ -242,5 +220,5 @@ class HMGConvolution(Layer):
             output += self.vars['bias']
         
         if self.residual and vanilla_feature is not None:
-            output += dot(vanilla_feature, self.vars['residual'], sparse=True)
+            output += mat_mul(vanilla_feature, self.vars['residual'], sparse=True)
         return self.act(output)
