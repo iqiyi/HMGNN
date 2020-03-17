@@ -12,11 +12,8 @@ FLAGS = flags.FLAGS
 
 def prelu(_x, scope=None):
     """parametric ReLU activation"""
-    #with tf.variable_scope(name_or_scope=scope, default_name="prelu"):
     with tf.variable_scope(name_or_scope=scope, default_name="prelu"):
         _alpha = tf.get_variable("prelu", shape=_x.get_shape()[-1], dtype=_x.dtype, initializer=tf.constant_initializer(0.1))
-        #_alpha = tf.get_variable("prelu", shape=_x.get_shape()[-1],
-        #                         dtype=_x.dtype, initializer=tf.constant_initializer(0.1))
         return tf.maximum(0.0, _x) + _alpha * tf.minimum(0.0, _x)
 
 
@@ -58,7 +55,6 @@ class Model(object):
     def build(self):
         """ Wrapper for _build() """
         with tf.variable_scope(self.name):
-        # with tf.compat.v1.variable_scope(self.name):
             self._build()
 
         # Build sequential layer model
@@ -71,17 +67,13 @@ class Model(object):
                 hidden = layer(self.activations[-1])
             self.activations.append(hidden)
 
-        # -------------------------------
         self.outputs = self.activations[-1]
         preds = tf.argmax(self.predict(), 1)
         self.preds = tf.cast(preds,tf.float32)
         self.probs = tf.reduce_max(self.predict(), reduction_indices=[1])
-        # -------------------------------
 
         # Store model variables for easy access
         variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self.name)
-        #variables = tf.get_collection(tf.compat.v1.GraphKeys.GLOBAL_VARIABLES, scope=self.name)
-        # variables = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.GLOBAL_VARIABLES, scope=self.name)
         self.vars = {var.name: var for var in variables}
 
         # Build metrics
@@ -121,7 +113,8 @@ class Model(object):
         print(f"checkpoint_path = {checkpoint_path} ckpt = {ckpt}")
         saver.restore(sess, ckpt.model_checkpoint_path)
         print("Model restored from file: %s" % ckpt.model_checkpoint_path)
-        
+
+
 class HMGNN(Model):
     def __init__(self, placeholders, input_dim, hidden_dim, output_dim, input_num, normal_node_num, 
                  support_num, reweight_adj, residual, attention, sparse_adj_shape, pure_support=None, **kwargs):
@@ -154,8 +147,7 @@ class HMGNN(Model):
         self.labels = placeholders["labels"]
         self.labels_mask = placeholders["labels_mask"]
         self.dropout_ratio = placeholders["dropout"]
-        # self.loss_weight = placeholders["loss_weight"]
-        
+
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.hidden_dim = hidden_dim
@@ -168,14 +160,12 @@ class HMGNN(Model):
         for i in range(self.support_num):
             beta_values = tf.constant(np.array([FLAGS.beta for i in range(self.sparse_adj_shape[i][2][0])]), dtype=tf.float32)
             self.beta_constant.append(beta_values)
-        
-        
+
         self.reweight_adj = reweight_adj
         self.residual = residual
         self.use_attention = attention
 
         self.optimizer = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)
-        # self.optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)
 
         self.build()
 
@@ -185,11 +175,11 @@ class HMGNN(Model):
 
         # Cross entropy error
         self.loss += masked_softmax_cross_entropy(self.outputs, self.labels, self.labels_mask)
-        # self.loss += weighted_masked_softmax_cross_entropy(self.outputs, self.labels, self.labels_mask, self.loss_weight)
         tf.summary.scalar("loss", self.loss)
         
     def _accuracy(self):
         self.accuracy = masked_accuracy(self.outputs, self.labels, self.labels_mask)
+
     def _evaluate(self):
         '''evaluation = [precision, recall, f1, tpr, tnr, preds]'''
         self.evaluation = precision_recall_f1_tpr_tnr_preds(self.outputs,self.labels, self.labels_mask)
@@ -208,7 +198,6 @@ class HMGNN(Model):
         # create attention variables
         if self.use_attention:
             with tf.variable_scope("attention"):
-                # print(f"tf.get_variable_scope().original_name_scope = {tf.compat.v1.get_variable_scope().original_name_scope}")
                 if FLAGS.adj_power > 10:
                     shape = [FLAGS.adj_power, 1]
                     init_range = np.sqrt(6.0/(shape[0]+shape[1]))
@@ -221,21 +210,21 @@ class HMGNN(Model):
                     init_range = np.sqrt(6.0/(shape[0]+shape[1]))
                     initial = tf.random.uniform(shape, minval=-init_range, maxval=init_range, dtype=tf.float32)
                     self.att = tf.nn.softmax(tf.get_variable("att", initializer=initial), dim=0)
-        
 
         for i in range(len(mid_dim) - 1):
             input_dim, output_dim = mid_dim[i], mid_dim[i+1]
             residual = self.residual
             if i < len(mid_dim) - 2:
-                activation = tf.nn.elu   # middle layer
+                activation = tf.nn.elu      # middle layer
             else:
-                activation = lambda x: x            # last layer
+                activation = lambda x: x    # last layer
                 residual = False
 
             if i > 0: sparse_input = False  # middle layer
-            else: sparse_input = True      # first layer
+            else: sparse_input = True       # first layer
 
-            self.layers.append(HMGConvolution(input_dim=input_dim,
+            self.layers.append(HMGConvolution(
+                                    input_dim=input_dim,
                                     output_dim=output_dim,
                                     input_num=self.input_num,
                                     adj_support = self.support,

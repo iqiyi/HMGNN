@@ -12,7 +12,6 @@ from inits import *
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
-
 # global unique layer ID dictionary for layer name assignment
 _LAYER_UIDS = {}
 
@@ -30,10 +29,8 @@ def get_layer_uid(layer_name=''):
 def sparse_dropout(x, keep_prob, noise_shape):
     """Dropout for sparse tensors."""
     random_tensor = keep_prob
-    #random_tensor += tf.random_uniform(noise_shape)
     random_tensor += tf.random.uniform(noise_shape)
     dropout_mask = tf.cast(tf.floor(random_tensor), dtype=tf.bool)
-    #pre_out = tf.sparse_retain(x, dropout_mask)
     pre_out = tf.sparse.retain(x, dropout_mask)
     return pre_out * (1./keep_prob)
 
@@ -42,62 +39,9 @@ def dot(x, y, sparse=False):
     """Wrapper for tf.matmul (sparse vs dense)."""
     if sparse:
         res = tf.sparse_tensor_dense_matmul(x, y)
-        # res = tf.sparse.sparse_dense_matmul(x, y)
     else:
         res = tf.matmul(x, y)
     return res
-
-def sparse_to_tuple(sparse_mx):
-    """Convert sparse matrix to tuple representation."""
-    def to_tuple(mx):
-        if not sp.isspmatrix_coo(mx):
-            mx = mx.tocoo()
-        coords = np.vstack((mx.row, mx.col)).transpose()
-        values = mx.data
-        shape = mx.shape
-        return coords, values, shape
-
-    if isinstance(sparse_mx, list):
-        for i in range(len(sparse_mx)):
-            sparse_mx[i] = to_tuple(sparse_mx[i])
-    else:
-        sparse_mx = to_tuple(sparse_mx)
-
-    return sparse_mx
-
-def preprocess_features(features):
-    """Row-normalize feature matrix and convert to tuple representation"""
-    rowsum = np.array(features.sum(1))
-    r_inv = np.power(rowsum, -1).flatten()
-    r_inv[np.isinf(r_inv)] = 0.
-    r_mat_inv = sp.diags(r_inv)
-    features = r_mat_inv.dot(features)
-    return sparse_to_tuple(features)
-
-def normalize_adj(adj):
-    """Symmetrically normalize adjacency matrix."""
-    adj = sp.coo_matrix(adj)
-    rowsum = np.array(adj.sum(1))
-    d_inv_sqrt = np.power(rowsum, -0.5).flatten()
-    d_inv_sqrt[np.isinf(d_inv_sqrt)] = 0.
-    d_mat_inv_sqrt = sp.diags(d_inv_sqrt)
-    return adj.dot(d_mat_inv_sqrt).transpose().dot(d_mat_inv_sqrt).tocoo()
-
-def normalize_adj_asymmetric(adj):
-    """Asymmetric normalize adjacency matrix"""
-    adj = sp.coo_matrix(adj)
-    rowsum = np.array(adj.sum(1))
-    d_inv_sqrt = np.power(rowsum,-1).flatten()
-    d_inv_sqrt[np.isinf(d_inv_sqrt)] = 0.
-    d_mat_inv_sqrt = sp.diags(d_inv_sqrt)
-    return d_mat_inv_sqrt.dot(adj).tocoo()
-
-def preprocess_adj(adj):
-    """Preprocessing of adjacency matrix for simple GCN model and conversion to tuple representation."""
-    #max_ = adj.max(axis=1)
-    y = adj.transpose(copy=True)
-    adj_normalized = normalize_adj(adj + y + sp.eye(adj.shape[0]))
-    return sparse_to_tuple(adj_normalized)
 
 
 class Layer(object):
