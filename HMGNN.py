@@ -40,15 +40,17 @@ def main():
 
     print(f"---------------------------------- Begin loading data ----------------------------------")
     begin_load_data_time = time.time()
-    # Please specify your own data loader
+    # your own data loader can specify here
     vani_adjs, vani_ftr, vani_labels, y_train, y_test, y_val, train_mask, test_mask, val_mask = load_data("data")
 
+    # establish super nodes
     support, features, y_train, y_val, train_mask, val_mask, super_node_num = \
         establish(FLAGS, vani_adjs, vani_ftr, vani_labels, y_train, y_test, y_val, train_mask, test_mask, val_mask)
 
-    num_supports = len(vani_adjs)  # 不同种类图的个数
-    normal_node_num = len(vani_ftr)
-    total_num = normal_node_num + super_node_num
+    # nodes count
+    num_supports = len(vani_adjs)                  # different kinds of graph
+    normal_node_num = len(vani_ftr)                # nodes count without super nodes
+    total_num = normal_node_num + super_node_num   # nodes count with super nodes
 
     end_load_data_time = time.time() - begin_load_data_time
     print(f"---------------------------- Finish loading data: time elapsed: {end_load_data_time:.3f}s -----------\n")
@@ -72,7 +74,7 @@ def main():
     }
 
     # build model
-    hidden_dim = [64, 32, 16, 8, 4]
+    hidden_dim = [FLAGS.hidden1, FLAGS.hidden2, FLAGS.hidden3, FLAGS.hidden4, FLAGS.hidden5]
     model = model_func(placeholders,
                        input_dim=FLAGS.feature_dim,
                        hidden_dim=hidden_dim,
