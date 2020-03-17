@@ -1,47 +1,27 @@
 ## Heterogeneous Multiple Mini-Graph Neural Network for Invitation Anti-cheating
 
-### 代码概览
+### code overview
 ```
 .
-├── data_utils
-│   ├── data_loader.py
-│   ├── data_loader_v2.py
-│   ├── edge_utils.py
-│   ├── feature_utils.py
-│   ├── label_utils.py
-│   ├── mysql_helper.py
-│   ├── mysql_tabris_helper.py
-├── date_utils.py
-├── GACN.py
-├── GAT_models
-│   ├── base_gattn.py
-│   ├── gat.py
-│   ├── __init__.py
-│   ├── __pycache__
-│   └── sp_gat.py
-├── GAT.py
-├── GAT_utils
-│   ├── __init__.py
-│   ├── layers.py
-│   ├── process_ppi.py
-│   ├── process.py
-├── GCN.py
-├── HMMG.py
+├── HMGNN.py
+├── establish_super_nodes.py
 ├── hparams.py
-├── interpreter.py
-├── LGBM.py
-├── LR.py
+├── utils.py
+├── data_utils
+│   ├── __init__.py
+│   └── data_loader.py
 ├── model_graph
 │   ├── __init__.py
 │   ├── inits.py
 │   ├── layers.py
-│   ├── l_softmax.py
 │   ├── metrics.py
-│   ├── models.py
-├── README.md
+│   └── models.py
+├── data
+│   ├── edges_mat.npy
+│   ├── features.npy
+│   └── labels.npy
 ├── requirements.txt
-├── utils.py
-└── XGBoost.py
+└── README.md
 ```
 
 -  GAT_models 和 GAT_utils 是用于GAT建模的组件。 
