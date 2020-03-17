@@ -79,7 +79,6 @@ class Layer(object):
     def __call__(self, inputs, vanilla_feature=None):
         with tf.name_scope(self.name):
             if self.logging and not self.sparse_inputs:
-                #tf.summary.histogram(self.name + '/inputs', inputs)
                 tf.summary.histogram(self.name + '/inputs', inputs)
             if vanilla_feature is None:
                 outputs = self._call(inputs)
@@ -92,7 +91,8 @@ class Layer(object):
     def _log_vars(self):
         for var in self.vars:
             tf.summary.histogram(self.name + '/vars/' + var, self.vars[var])
-            
+
+
 class HMGConvolution(Layer):
     """Heterogeneous Multiple Mini-Graphs Convolution Layer."""
     def __init__(self, input_dim, output_dim, input_num, adj_support,
@@ -138,7 +138,7 @@ class HMGConvolution(Layer):
                 for i in range(len(self.support)):
                     self.vars['weights_' + str(i)] = glorot([input_dim, output_dim], name='weights_' + str(i))
             else:
-                self.vars['weight'] = golor([input_dim, output_dim], name='weight')
+                self.vars['weight'] = glorot([input_dim, output_dim], name='weight')
                 
             if self.bias:
                 self.vars['bias'] = zeros([output_dim], name='bias')
@@ -157,8 +157,7 @@ class HMGConvolution(Layer):
             x = sparse_dropout(x, 1-self.dropout, self.num_features_nonzero)
         else:
             x = tf.nn.dropout(x, 1-self.dropout)
-            # x = tf.nn.dropout(x, rate=self.dropout)
-        
+
         # convolve
         supports = list()
         for i in range(len(self.support)):
@@ -171,10 +170,7 @@ class HMGConvolution(Layer):
                         pre_sup = dot(x, w, sparse=self.sparse_inputs)
                     else:
                         pre_sup = w
-                    
-                    
-                    # print(f"type(self.support) = {type(self.support)} type(self.support[{i}]) = {type(self.support[i])}")
-                    # support = attention_dot(self.support[i], pre_sup)
+
                     support = dot(self.support[i][j], pre_sup, sparse=True)
                     cur_support.append(tf.multiply(support, 1.0/FLAGS.adj_power))
                 supports.append(tf.add_n(cur_support))
@@ -188,9 +184,8 @@ class HMGConvolution(Layer):
                     pre_sup = dot(x, w, sparse=self.sparse_inputs)
                 else:
                     pre_sup = w
-                
-                
-                if self.reweight_adj and self.sparse_inputs == False: # dense features
+
+                if self.reweight_adj and self.sparse_inputs == False:   # dense features
                     # self-attention based on feature x
                     
                     seq = tf.expand_dims(x, axis=0)
@@ -201,8 +196,6 @@ class HMGConvolution(Layer):
                     attn_drop = 0.0
                     in_drop = 0.0
                     
-                    # seq_fts = tf.layers.conv1d(seq, out_sz, 1, use_bias=False)
-                    # print(f"seq_fts.shape = {seq_fts.shape}")
                     seq_fts = tf.expand_dims(pre_sup, axis=0)
 
                     # simplest self-attention possible
@@ -220,7 +213,6 @@ class HMGConvolution(Layer):
                             values=tf.nn.leaky_relu(logits.values), 
                             dense_shape=logits.dense_shape)
                     coefs = tf.sparse_softmax(lrelu)
-                    # coefs = tf.sparse.softmax(tf.sparse.add(lrelu, adj_mat))
 
                     if coef_drop != 0.0:
                         coefs = tf.SparseTensor(indices=coefs.indices,
@@ -232,21 +224,10 @@ class HMGConvolution(Layer):
                     # As tf.sparse_tensor_dense_matmul expects its arguments to have rank-2,
                     # here we make an assumption that our input is of batch size 1, and reshape appropriately.
                     # The method will fail in all other cases!
-                    # coefs = tf.sparse_reshape(coefs, [nb_nodes, nb_nodes])
                     coefs = tf.sparse.reshape(coefs, [nb_nodes, nb_nodes])
-                    # vals = tf.sparse_tensor_dense_matmul(coefs, seq_fts)\
-                    
-#                     print(f"type(adj_mat.indices)={type(adj_mat.indices)} adj_mat.indices.shape={adj_mat.indices.shape}")
-#                     print(f"type(coefs.indices)={type(coefs.indices)} coefs.indices.shape={coefs.indices.shape}")
-#                     beta_values = [FLAGS.beta for i in range(coefs.indices.shape[0])]
-#                     beta = tf.SparseTensor(indices=adj_mat.shape[0],
-#                                 values=beta_values,
-#                                 dense_shape=adj_mat.dense_shape)
-#                     coefs = tf.sparse.add(tf.matmul(coefs, beta, True, True), adj_mat)
                     coefs = tf.sparse.add(coefs.__mul__(self.beta_constant[i]), adj_mat)
 
-                    support = tf.sparse.sparse_dense_matmul(coefs, pre_sup)
-                    # support = tf.sparse.sparse_dense_matmul(coefs, tf.squeeze(seq_fts))
+                    support = tf.sparse_tensor_dense_matmul(coefs, pre_sup)
                 else:
                     support = dot(self.support[i], pre_sup, sparse=True)
                 supports.append(support)
@@ -333,8 +314,7 @@ class GraphConvolution(Layer):
         # helper variable for sparse dropout
         self.num_features_nonzero = num_features_nonzero
 
-        #with tf.variable_scope(self.name + '_vars'):
-        with tf.compat.v1.variable_scope(self.name + '_vars'):
+        with tf.variable_scope(self.name + '_vars'):
             for i in range(len(self.support)):
                 self.vars['weights_' + str(i)] = glorot([input_dim, output_dim],
                                                         name='weights_' + str(i))
@@ -351,8 +331,7 @@ class GraphConvolution(Layer):
         if self.sparse_inputs:
             x = sparse_dropout(x, 1-self.dropout, self.num_features_nonzero)
         else:
-            #x = tf.nn.dropout(x, 1-self.dropout)
-            x = tf.nn.dropout(x, rate=self.dropout)
+            x = tf.nn.dropout(x, 1-self.dropout)
 
         # convolve
         supports = list()
@@ -362,7 +341,7 @@ class GraphConvolution(Layer):
                               sparse=self.sparse_inputs)
             else:
                 pre_sup = self.vars['weights_' + str(i)]
-            # support = attention_dot(self.support[i], pre_sup)
+
             support = dot(self.support[i], pre_sup, sparse=True)
             supports.append(support)
             if FLAGS.adj_power > 1:

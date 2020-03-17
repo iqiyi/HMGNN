@@ -41,7 +41,7 @@ flags.DEFINE_integer('max_degree', 3, 'Maximum Chebyshev polynomial degree.')
 
 ## settings for residual
 flags.DEFINE_boolean("residual", True, 'whether or not use residual architecture')
-flags.DEFINE_boolean("multi_weight", True, 'whether or not weight each graph seperately')
+flags.DEFINE_boolean("multi_weight", False, 'whether or not weight each graph seperately')
 flags.DEFINE_integer('adj_power', 1, 'the power of adjacency matrix')
 
 ## some flags
