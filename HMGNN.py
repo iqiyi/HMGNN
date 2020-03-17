@@ -245,7 +245,7 @@ if __name__ == "__main__":
     begin_load_data_time = time.time()
     ####### Please specify your own data loader
     # vani_adjs, vani_ftr, adjs, features, labels, uid_id_map, y_train, y_val, y_test, train_mask, val_mask, test_mask = load_data()
-    vani_adjs, vani_ftr, labels, y_train, y_test, y_val, train_mask, test_mask, val_mask = load_data("data_utils")
+    vani_adjs, vani_ftr, labels, y_train, y_test, y_val, train_mask, test_mask, val_mask = load_data("data")
     vani_ftr = list(vani_ftr)
 
     # graph_info = [normal_node_num, super_node_num, super_links vani_adjs, preprocessed_adjs, preprocessed_feature]

@@ -3,7 +3,6 @@
 import numpy as np
 import scipy.sparse as sp
 import pickle as pkl
-import networkx as nx
 from scipy.sparse.linalg.eigen.arpack import eigsh
 import sys
 import tensorflow as tf
