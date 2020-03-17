@@ -73,9 +73,9 @@ def main():
 
     # define placeholders
     placeholders = {
-        'support': [tf.sparse_placeholder(tf.float32) if FLAGS.adj_power == 1 else [tf.sparse_placeholder(tf.float32)
-                                                                                    for i in range(FLAGS.adj_power)] for
-                    _ in range(num_supports)],
+        'support': [tf.sparse_placeholder(tf.float32) if FLAGS.adj_power == 1
+                    else [tf.sparse_placeholder(tf.float32) for _ in range(FLAGS.adj_power)]
+                    for _ in range(num_supports)],
         'features': tf.sparse_placeholder(tf.float32, shape=tf.constant(features[2], dtype=tf.int64)),
         'labels': tf.placeholder(tf.float32, shape=(None, y_train.shape[1])),
         'labels_mask': tf.placeholder(tf.int32),
@@ -98,8 +98,7 @@ def main():
                        sparse_adj_shape=sparse_adj_shape,
                        logging=True)
     end_initializing = time.time() - begin_initialize
-    print(
-        f"---------------------------------- Finish initialzing model, time elapsed: {end_initializing:.3f}s -------------\n")
+    print(f"------------------- Finish initialzing model, time elapsed: {end_initializing:.3f}s -------------\n")
 
     # train model
     print(f"\nstart training process ...........")
@@ -120,8 +119,8 @@ def main():
             feed_dict.update({placeholders['dropout']: FLAGS.dropout})
 
             train_outs = sess.run([model.opt_op, model.loss, model.accuracy, model.evaluation], feed_dict=feed_dict)
-            train_loss, train_acc, train_preds, train_eval = train_outs[1], train_outs[2], train_outs[3][-1], \
-                                                             train_outs[3][:-1]
+            train_loss, train_acc, train_preds, train_eval = \
+                train_outs[1], train_outs[2], train_outs[3][-1], train_outs[3][:-1]
 
             train_time = time.time() - epoch_begin
 
@@ -141,10 +140,8 @@ def main():
             if FLAGS.attention and epoch > 0 and epoch % 20 == 0:
                 print(f"subgraph attention: {[_[0] for _ in sess.run(model.att)]}")
 
-            # if train_eval[2] > best_f1:
             if val_eval[2] > best_f1:
                 best_f1 = max(val_eval[2], best_f1)
-                # best_f1 = max(train_eval[2], best_f1)
                 if FLAGS.model_version >= 0:
                     save_name = FLAGS.model_name + "-Version" + str(FLAGS.model_version)
                 else:
@@ -157,27 +154,6 @@ def main():
 
     train_end = time.time() - train_begin
     print(f"----------------------- Total Training Time = {train_end:.3f}s----------------------------")
-
-    '''
-    all_preds, all_probs = get_all_preds()
-
-    print(f"begin_date={FLAGS.begin_date} end_date={FLAGS.end_date} predict_date={FLAGS.predict_date} total={total_num}")
-    print(f"train: total={train_num} pos={train_pos} neg={train_neg} unlabel={train_num-train_pos-train_neg}")
-    print(f"val  : total={val_num} pos={val_pos}  neg={val_neg}")
-    print(f"test : total={test_num} pos={test_pos} neg={test_neg} unlabel={test_unl}")
-
-    for i in range(all_probs.shape[0]):
-        if all_preds[i] == 0 and all_probs[i] > 0.5:
-            all_probs[i] = 1 - all_probs[i]
-
-    print("\ntest on validation data ...")
-    val_preds, val_probs, val_labels = all_preds[val_mask], all_probs[val_mask], labels[val_mask]
-    evaluate_preds(val_preds, val_probs, val_labels)
-
-    print("\ntest on test data ...")
-    test_preds, test_probs, test_labels = all_preds[test_mask], all_probs[test_mask], labels[test_mask]
-    evaluate_preds(test_preds, test_probs, test_labels)
-    '''
 
 
 if __name__ == "__main__":
