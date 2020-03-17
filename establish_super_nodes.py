@@ -1,9 +1,7 @@
 # _*_ coding::utf-8 _*_
 
 
-import numpy as np
 from sklearn.neighbors import NearestNeighbors
-import scipy.sparse as sp
 from utils import *
 
 
@@ -144,10 +142,8 @@ def establish(args, vani_adjs, vani_ftr, labels, y_train, y_test, y_val, train_m
     # end_load_data_time = time.time() - begin_load_data_time
     print(f"label_kinds={args.label_kinds} num_supports={num_supports} input_dim={features[2][1]}")
     print(f"total_num = normal_node_num + super_node_num = {normal_node_num} + {super_node_num} = {total_num}")
-    # print(
-        # f"---------------------------------- Finish loading data: time elapsed: {end_load_data_time:.3f}s -----------\n")
 
-    return support, features, y_train, y_val, train_mask, val_mask
+    return support, features, y_train, y_val, train_mask, val_mask, super_node_num
 
 
 if __name__ == '__main__':
