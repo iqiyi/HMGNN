@@ -41,7 +41,7 @@ def main():
     print(f"---------------------------------- Begin loading data ----------------------------------")
     begin_load_data_time = time.time()
     # your own data loader can specify here
-    vani_adjs, vani_ftr, vani_labels, y_train, y_test, y_val, train_mask, test_mask, val_mask = load_data("data")
+    vani_adjs, vani_ftr, vani_labels, y_train, y_test, y_val, train_mask, test_mask, val_mask = load_data(FLAGS)
 
     # establish super nodes
     support, features, y_train, y_val, train_mask, val_mask, super_node_num = \

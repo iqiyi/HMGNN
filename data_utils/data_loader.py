@@ -13,18 +13,23 @@ def sample_mask(idx, l):
     return np.array(mask, dtype=np.bool)
 
 
-def load_data(data_path):
+def load_data(args):
+    data_path = args.data_dir
     labels = np.load(os.path.join(data_path, "labels.npy"))
 
     node_num = labels.shape[0]
     classify = labels.shape[1]
+    assert classify == args.label_kinds
 
     ids = [i for i in range(node_num)]
     random.shuffle(ids)
 
-    train_ids = ids[0: math.ceil(0.6*node_num)]
-    test_ids = ids[math.ceil(0.6*node_num): math.ceil(0.8*node_num)]
-    val_ids = ids[math.ceil(0.8*node_num):]
+    train_ratio = args.train_ratio
+    test_ratio = args.train_ratio + args.test_ratio
+
+    train_ids = ids[0: math.ceil(train_ratio * node_num)]
+    test_ids = ids[math.ceil(train_ratio*node_num): math.ceil(test_ratio*node_num)]
+    val_ids = ids[math.ceil(test_ratio*node_num):]
 
     train_mask = sample_mask(train_ids, node_num)
     val_mask = sample_mask(val_ids, node_num)
@@ -50,4 +55,7 @@ def load_data(data_path):
 
 
 if __name__ == '__main__':
-    load_data(".")
+    import hparams
+    FLAGS = hparams.create()
+    FLAGS.data_dir = "../data/"
+    load_data(FLAGS)
