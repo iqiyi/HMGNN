@@ -7,7 +7,6 @@ We first introduce a kNN-based mechanism to combine diverse yet similar graphs a
 presented to learn the importance of heterogeneous information. To enhance the representation of sparse and 
 high-dimensional features, a residual style connection that embeds vanilla features into a hidden state is built.
 
-
 ## requirements
 tensorflow (>=1.12)  
 pandas  
@@ -35,3 +34,9 @@ The parameters are defined in `hparam.py`. Main parameters conclude:
 - learning_rate=0.0005
 - whether or not using attention: attention=True
 - whether or not using vanilla features: residual=True
+
+### performance
+![pic](./image/performance.png)
+
+### model
+![pic](./image/architecture.png)
