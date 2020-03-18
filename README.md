@@ -1,5 +1,5 @@
-## Heterogeneous Multiple Mini-Graph Neural Network for Invitation Anti-cheating
-TensorFlow implementation of Heterogeneous Multiple Mini-Graphs Neural Network for Fraudulent Invitation Detection  
+# HMGNN
+TensorFlow implementation of Heterogeneous Multiple Mini-Graphs Neural Network  
 - usage  
 the task of (semi-supervised) classification of nodes in a graph  
 - introduction  
@@ -7,19 +7,21 @@ We first introduce a kNN-based mechanism to combine diverse yet similar graphs a
 presented to learn the importance of heterogeneous information. To enhance the representation of sparse and 
 high-dimensional features, a residual style connection that embeds vanilla features into a hidden state is built.
 
+## overview
+![pic](./image/architecture.png)
+
 ## requirements
 tensorflow (>=1.12)  
 pandas  
 numpy
 
-### quick-start
+## quick-start
 `python HMGNN.py`
 
 ### Data
-The data used in quick-start is the Cora dataset.
-The Cora dataset consists of 2708 scientific publications classified into one of seven classes.
+The data used in quick-start is the Cora dataset.  
+The Cora dataset consists of 2708 scientific publications classified into one of seven classes.  
 The Cora dataset has saved as .npy in dir ./data
-
 - labels.npy:    shape=(2708, 7)  
 each publication is classified into one of seven classes.
 - features.npy:  shape=(2708, 1433)  
@@ -37,6 +39,3 @@ The parameters are defined in `hparam.py`. Main parameters conclude:
 
 ### performance
 ![pic](./image/performance.png)
-
-### model
-![pic](./image/architecture.png)
