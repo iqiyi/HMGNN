@@ -8,7 +8,7 @@ import warnings
 import time
 import hparams
 from data_utils.data_loader import load_data
-from establish_super_nodes import establish
+from establish_hyper_nodes import establish
 from model_graph.models import HMGNN
 from utils import *
 
@@ -43,14 +43,14 @@ def main():
     # your own data loader can specify here
     vani_adjs, vani_ftr, vani_labels, y_train, y_test, y_val, train_mask, test_mask, val_mask = load_data(FLAGS)
 
-    # establish super nodes
-    support, features, y_train, y_val, train_mask, val_mask, super_node_num = \
+    # establish hyper nodes
+    support, features, y_train, y_val, train_mask, val_mask, hyper_node_num = \
         establish(FLAGS, vani_adjs, vani_ftr, vani_labels, y_train, y_test, y_val, train_mask, test_mask, val_mask)
 
     # nodes count
     num_supports = len(vani_adjs)                  # different kinds of graph
-    normal_node_num = len(vani_ftr)                # nodes count without super nodes
-    total_num = normal_node_num + super_node_num   # nodes count with super nodes
+    normal_node_num = len(vani_ftr)                # nodes count without hyper nodes
+    total_num = normal_node_num + hyper_node_num   # nodes count with hyper nodes
 
     end_load_data_time = time.time() - begin_load_data_time
     print(f"---------------------------- Finish loading data: time elapsed: {end_load_data_time:.3f}s -----------\n")

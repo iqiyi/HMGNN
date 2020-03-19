@@ -41,9 +41,9 @@ flags.DEFINE_boolean("residual", True, 'whether or not use residual architecture
 flags.DEFINE_boolean("multi_weight", False, 'whether or not weight each graph seperately')
 flags.DEFINE_integer('adj_power', 1, 'the power of adjacency matrix')
 
-# super nodes
+# hyper nodes
 flags.DEFINE_integer('minimum_subgraph_size', 5, 'filter too small sub-graph')
-flags.DEFINE_integer('nearest_neighbor_K', 5, 'super nodes K-nearest neighbors')
+flags.DEFINE_integer('nearest_neighbor_K', 5, 'hyper nodes K-nearest neighbors')
 flags.DEFINE_float('beta', 0.5, "the weight between subgraph embedding and own embedding")
 
 

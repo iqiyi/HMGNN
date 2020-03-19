@@ -5,15 +5,15 @@ from sklearn.neighbors import NearestNeighbors
 from utils import *
 
 
-def prepare_super_nodes(args, vani_adj):
+def prepare_hyper_nodes(args, vani_adj):
     '''
-    using BFS to analyze the mini-graphs in the vanilla graph,
+    using BFS to analyze the sub-graphs in the vanilla graph,
     return
-        the count of mini-graphs in the vanilla graph,
-        the size of each mini-graph,
-        the id set of each mini-graph.
+        the count of sub-graphs in the vanilla graph,
+        the size of each sub-graph,
+        the id set of each sub-graph.
     '''
-    super_nodes = []
+    hyper_nodes = []
     for index, per_graph in enumerate(vani_adj):
         def bfs_graph(Graph):
             node_num = Graph[3]
@@ -55,44 +55,44 @@ def prepare_super_nodes(args, vani_adj):
                 subgraph_ids.append(tmp_visited)
             return subgraph_num, subgraph_size, subgraph_ids
         graph_num, graph_size, graph_ids = bfs_graph(per_graph)
-        super_nodes.append([graph_num, graph_size, graph_ids])
-    return super_nodes
+        hyper_nodes.append([graph_num, graph_size, graph_ids])
+    return hyper_nodes
 
 
 def establish(args, vani_adjs, vani_ftr, labels, y_train, y_test, y_val, train_mask, test_mask, val_mask):
     '''
-    there are many mini-graphs in vanilla graph, a super node represents a mini-graph.
-    the meaning features of each mini-graph are used as the features of super nodes.
-    and the super node's nearest neighbors are connected between each super nodes.
+    there are many sub-graphs in vanilla graph, a hyper node represents a sub-graph.
+    the meaning features of each sub-graph are used as the features of hyper nodes.
+    and the hyper node's nearest neighbors are connected between each hyper nodes.
     '''
     num_supports = len(vani_adjs)                         # different kinds of graph
-    super_nodes = prepare_super_nodes(args, vani_adjs)    # super_nodes: [[graph_num, graph_size, graph_ids], ...]
-    normal_node_num = len(vani_ftr)                       # nodes count without super nodes
-    super_node_num = sum([per[0] for per in super_nodes])
-    total_num = normal_node_num + super_node_num
+    hyper_nodes = prepare_hyper_nodes(args, vani_adjs)    # hyper_nodes: [[graph_num, graph_size, graph_ids], ...]
+    normal_node_num = len(vani_ftr)                       # nodes count without hyper nodes
+    hyper_node_num = sum([per[0] for per in hyper_nodes])
+    total_num = normal_node_num + hyper_node_num
     vani_ftr_np = np.array(vani_ftr)
 
     edge_name = ["e%d" % i for i in range(1, num_supports + 1)]
 
-    # using the meaning feature as the feature of super node
+    # using the meaning feature as the feature of hyper node
     features = vani_ftr.copy()
     for i in range(num_supports):
-        for j in range(super_nodes[i][0]):  # super_nodes[i][0] : mini-graph count in vanilla graph
-            features.append(list(np.mean(vani_ftr_np[super_nodes[i][2][j]], axis=0)))
+        for j in range(hyper_nodes[i][0]):  # hyper_nodes[i][0] : sub-graph count in vanilla graph
+            features.append(list(np.mean(vani_ftr_np[hyper_nodes[i][2][j]], axis=0)))
 
-    # finding K nearest neighbors of each super nodes
+    # finding K nearest neighbors of each hyper nodes
     whole_support = []
     pre_graph_sum = [0 for _ in range(num_supports)]
     for i in range(1, num_supports):
-        pre_graph_sum[i] = pre_graph_sum[i - 1] + super_nodes[i - 1][0]
+        pre_graph_sum[i] = pre_graph_sum[i - 1] + hyper_nodes[i - 1][0]
 
     features_np = np.array(features)
     for i in range(num_supports):
         st = normal_node_num + pre_graph_sum[i]
-        ed = st + super_nodes[i][0]
-        super_features = features_np[st:ed]
-        clf = NearestNeighbors(n_neighbors=args.nearest_neighbor_K + 1, algorithm='ball_tree').fit(super_features)
-        distances, indices = clf.kneighbors(super_features)
+        ed = st + hyper_nodes[i][0]
+        hyper_features = features_np[st:ed]
+        clf = NearestNeighbors(n_neighbors=args.nearest_neighbor_K + 1, algorithm='ball_tree').fit(hyper_features)
+        distances, indices = clf.kneighbors(hyper_features)
 
         adjs = vani_adjs[i].copy()
         for index, per in enumerate(indices):
@@ -112,33 +112,33 @@ def establish(args, vani_adjs, vani_ftr, labels, y_train, y_test, y_val, train_m
     features = sp.csr_matrix(features).tolil()
     features = preprocess_features(features)
 
-    # add super nodes informations to labels, y_train, y_val, y_test, train_mask, val_mask, test_mask
-    super_node_labels = [-1 for _ in range(super_node_num)]  # using -1 as super node's label
+    # add hyper nodes information to labels, y_train, y_val, y_test, train_mask, val_mask, test_mask
+    hyper_node_labels = [-1 for _ in range(hyper_node_num)]  # using -1 as hyper node's label
     labels = list(labels)
-    labels.extend(super_node_labels)
+    labels.extend(hyper_node_labels)
     labels = np.array(labels)
 
-    super_node_mask = [False for _ in range(super_node_num)]
+    hyper_node_mask = [False for _ in range(hyper_node_num)]
     train_mask = list(train_mask)
-    train_mask.extend(super_node_mask)
+    train_mask.extend(hyper_node_mask)
     train_mask = np.array(train_mask, dtype=np.bool)
 
     val_mask = list(val_mask)
-    val_mask.extend(super_node_mask)
+    val_mask.extend(hyper_node_mask)
     val_mask = np.array(val_mask, dtype=np.bool)
 
     test_mask = list(test_mask)
-    test_mask.extend(super_node_mask)
+    test_mask.extend(hyper_node_mask)
     test_mask = np.array(test_mask, dtype=np.bool)
 
-    super_node_one_hot = np.zeros((super_node_num, args.label_kinds), dtype=np.int32)
-    y_train = np.vstack((y_train, super_node_one_hot))
-    y_val = np.vstack((y_val, super_node_one_hot))
+    hyper_node_one_hot = np.zeros((hyper_node_num, args.label_kinds), dtype=np.int32)
+    y_train = np.vstack((y_train, hyper_node_one_hot))
+    y_val = np.vstack((y_val, hyper_node_one_hot))
 
     print(f"label_kinds={args.label_kinds} num_supports={num_supports} input_dim={features[2][1]}")
-    print(f"total_num = normal_node_num + super_node_num = {normal_node_num} + {super_node_num} = {total_num}")
+    print(f"total_num = normal_node_num + hyper_node_num = {normal_node_num} + {hyper_node_num} = {total_num}")
 
-    return support, features, y_train, y_val, train_mask, val_mask, super_node_num
+    return support, features, y_train, y_val, train_mask, val_mask, hyper_node_num
 
 
 if __name__ == '__main__':
