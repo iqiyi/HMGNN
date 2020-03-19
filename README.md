@@ -47,10 +47,13 @@ The parameters are defined in `hparam.py`. Main parameters conclude:
 We compare our proposal, HMGNN, with GCN, one of the classic graph convolutional network based approach.  
 The training dataset is used to learn the model while the model selection
 is based on the performance on the validation dataset.  
-The accuracy measure is considered. Our proposed method achieves the better performance.
-| |HMGNN|GCN
-|:---:|:---:|:---:|
+The accuracy measure is considered. Our proposed method achieves the better performance.  
+The table below is showed the accuracy of HMGNN and GCN. 
+The pictures show the detailed loss and accuracy curve on training and validation dataset.
+
+|         |HMGNN|GCN  |
+|  :---:  |:---:|:---:|
 |train_acc|0.908|0.860|
-|val_acc|0.867|0.854|
+|val_acc  |0.867|0.854|
 
 ![pic](./image/performance.png)
