@@ -8,6 +8,12 @@ presented to learn the importance of heterogeneous information. To enhance the r
 high-dimensional features, a residual style connection that embeds vanilla features into a hidden state is built.
 
 ## overview
+The overall architecture of our proposal is displayed here.   
+The left part illustrates kNN-based hyper-graphs generation given normal node features and their connected relation.   
+We concatenate the feature matrix of the generated hyper-nodes from different sub-graphs to the input feature matrix 
+to form the final feature representation that is fed into neural networks.   
+The prediction is made based on the learned hidden state learned from the middle procedure.   
+Different colors of nodes and edges indicate different types of nodes and relationships.
 ![pic](./image/architecture.png)
 
 ## requirements
@@ -38,4 +44,13 @@ The parameters are defined in `hparam.py`. Main parameters conclude:
 - whether or not using vanilla features: residual=True
 
 ### performance
+We compare our proposal, HMGNN, with GCN, one of the classic graph convolutional network based approach.  
+The training dataset is used to learn the model while the model selection
+is based on the performance on the validation dataset.  
+The accuracy measure is considered. Our proposed method achieves the better performance.
+| |HMGNN|GCN
+|:---:|:---:|:---:|
+|train_acc|0.908|0.860|
+|val_acc|0.867|0.854|
+
 ![pic](./image/performance.png)
